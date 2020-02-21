@@ -1,28 +1,31 @@
+package memory
+
 import java.io.File
 import java.util.*
-import kotlin.math.pow
 import kotlin.math.round
 
 object Logic {
     fun tests (arraySize: Int, tries: Int) {
         var slower = 0
         var faster = 0
+        var middleBf = 0.toBigInteger()
+        var middleRandom = 0.toBigInteger()
         val outputFile = File("output.txt")
         for (i in 0..tries) {
-            var myArray: MutableList<MutableList<Byte?>>? = arrayGenerator(arraySize)
-            val maxLength = myArray!!.sumBy {  it.count{ that -> that == null} }
+            val myArray: MutableList<MutableList<Byte?>> = arrayGenerator(arraySize)
+            val maxLength = myArray.sumBy {  it.count{ that -> that == null} }
             val arrayToAdd = toWrite(maxLength)
-            val now = System.nanoTime()
+            val startBf = System.nanoTime()
             bruteForce(myArray, arrayToAdd, arraySize)
-            val then = System.nanoTime() - now
-            outputFile.appendText("Brute force: $then\n")
-            val next = System.nanoTime()
+            val finishBf = System.nanoTime() - startBf
+            middleBf += finishBf.toBigInteger()
+            outputFile.appendText("Brute force: $finishBf\n")
+            val startRandom = System.nanoTime()
             anotherVision(myArray, arrayToAdd, arraySize)
-            val new = System.nanoTime() - next
-            myArray = null
-            System.gc()
-            outputFile.appendText("Random: $new\n")
-            val div = round(then.toDouble() / new.toDouble() * 100) / 100
+            val finshRandom = System.nanoTime() - startRandom
+            middleRandom += finshRandom.toBigInteger()
+            outputFile.appendText("Random: $finshRandom\n")
+            val div = round(finishBf.toDouble() / finshRandom.toDouble() * 100) / 100
             outputFile.appendText("BF/Random = $div\n")
             if (div > 1) {
                 outputFile.appendText("BF is slower.\n\n")
@@ -33,8 +36,9 @@ object Logic {
             }
         }
         outputFile.appendText("\nTOTAL RESULTS FOR A TRY\n")
-        outputFile.appendText("Array size: ${2.0.pow(arraySize).pow(2.0)}, total tries: ${tries+1} \n")
-        outputFile.appendText("BF is slower: $slower, BF is faster: $faster\n\n")
+        outputFile.appendText("Array size: 2^${arraySize*2}, total tries: ${tries + 1} \n")
+        outputFile.appendText("BF is slower: $slower, BF is faster: $faster\n")
+        outputFile.appendText("BF middle: ${middleBf/tries.toBigInteger()}, Random middle: ${middleRandom/tries.toBigInteger()}\n\n")
     }
 
     // генератор массива. Записывет байты в случайные ячейки
